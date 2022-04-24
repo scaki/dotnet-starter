@@ -7,7 +7,7 @@ public interface IBaseRepository<TEntity> where TEntity : BaseEntity
     IEnumerable<TEntity> Get();
     IEnumerable<TEntity> GetAsNoTracking();
     Task<IEnumerable<TEntity>> GetAsync();
-    Task<IEnumerable<TEntity>> GetAsyncAsNoTracking();
+    Task<IEnumerable<TEntity>> GetAsyncAsNoTracking(CancellationToken cancellationToken);
     TEntity GetById(object id);
     TEntity GetByIdAsNoTracking(object id);
     Task<TEntity> GetByIdAsync(object id);
@@ -16,7 +16,7 @@ public interface IBaseRepository<TEntity> where TEntity : BaseEntity
     void InsertAsync(TEntity entity);
     void InsertRange(IEnumerable<TEntity> entities);
     void InsertRangeAsync(IEnumerable<TEntity> entities);
-    void Delete(object id);
+    void Delete(TEntity entityToDelete);
     void DeleteRange(IEnumerable<TEntity> entitiesToDelete);
     void Update(TEntity entityToUpdate);
     void UpdateRange(IEnumerable<TEntity> entitiesToUpdate);

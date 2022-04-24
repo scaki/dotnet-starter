@@ -7,13 +7,13 @@ namespace CatalogService.Infrastructure.Repositories
 {
     public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : BaseEntity
     {
-        private readonly ApplicationDbContext _context;
+        public readonly ApplicationDbContext Context;
         private readonly DbSet<TEntity> _dbSet;
 
         protected BaseRepository(ApplicationDbContext context)
         {
-            _context = context;
-            _dbSet = _context.Set<TEntity>();
+            Context = context;
+            _dbSet = Context.Set<TEntity>();
         }
 
         public virtual IEnumerable<TEntity> Get()
@@ -31,9 +31,9 @@ namespace CatalogService.Infrastructure.Repositories
             return await _dbSet.ToListAsync();
         }
 
-        public virtual async Task<IEnumerable<TEntity>> GetAsyncAsNoTracking()
+        public virtual async Task<IEnumerable<TEntity>> GetAsyncAsNoTracking(CancellationToken cancellationToken)
         {
-            return await _dbSet.AsNoTracking().ToListAsync();
+            return await _dbSet.AsNoTracking().ToListAsync(cancellationToken);
         }
 
         public virtual TEntity GetById(object id)
@@ -45,7 +45,7 @@ namespace CatalogService.Infrastructure.Repositories
         {
             var entity = _dbSet.Find(id);
             if (entity == null) return null;
-            _context.Entry(entity).State = EntityState.Detached;
+            Context.Entry(entity).State = EntityState.Detached;
             return entity;
         }
 
@@ -58,7 +58,7 @@ namespace CatalogService.Infrastructure.Repositories
         {
             var entity = await _dbSet.FindAsync(id);
             if (entity == null) return null;
-            _context.Entry(entity).State = EntityState.Detached;
+            Context.Entry(entity).State = EntityState.Detached;
             return entity;
         }
 
@@ -81,16 +81,10 @@ namespace CatalogService.Infrastructure.Repositories
         {
             _dbSet.AddRangeAsync(entities);
         }
-
-        public virtual void Delete(object id)
+        
+        public virtual void Delete(TEntity entityToDelete)
         {
-            var entityToDelete = _dbSet.Find(id);
-            Delete(entityToDelete);
-        }
-
-        protected virtual void Delete(TEntity entityToDelete)
-        {
-            if (_context.Entry(entityToDelete).State == EntityState.Detached)
+            if (Context.Entry(entityToDelete).State == EntityState.Detached)
             {
                 _dbSet.Attach(entityToDelete);
             }
@@ -101,7 +95,7 @@ namespace CatalogService.Infrastructure.Repositories
         public virtual void DeleteRange(IEnumerable<TEntity> entitiesToDelete)
         {
             var baseEntities = entitiesToDelete.ToList();
-            foreach (var entity in baseEntities.Where(entity => _context.Entry(entity).State == EntityState.Detached))
+            foreach (var entity in baseEntities.Where(entity => Context.Entry(entity).State == EntityState.Detached))
             {
                 _dbSet.Attach(entity);
             }
@@ -112,7 +106,7 @@ namespace CatalogService.Infrastructure.Repositories
         public virtual void Update(TEntity entityToUpdate)
         {
             _dbSet.Attach(entityToUpdate);
-            _context.Entry(entityToUpdate).State = EntityState.Modified;
+            Context.Entry(entityToUpdate).State = EntityState.Modified;
         }
 
         public virtual void UpdateRange(IEnumerable<TEntity> entitiesToUpdate)
@@ -120,18 +114,18 @@ namespace CatalogService.Infrastructure.Repositories
             foreach (var entity in entitiesToUpdate)
             {
                 _dbSet.Attach(entity);
-                _context.Entry(entity).State = EntityState.Modified;
+                Context.Entry(entity).State = EntityState.Modified;
             }
         }
 
         public virtual void Save()
         {
-            _context.SaveChanges();
+            Context.SaveChanges();
         }
 
         public virtual void SaveAsync()
         {
-            _context.SaveChangesAsync();
+            Context.SaveChangesAsync();
         }
     }
 }

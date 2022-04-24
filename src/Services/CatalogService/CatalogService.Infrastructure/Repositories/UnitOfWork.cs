@@ -31,24 +31,23 @@ public sealed class UnitOfWork : IUnitOfWork
         _context.SaveChanges();
     }
 
-    public void SaveAsync()
+    public async Task SaveAsync()
     {
-        _context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
     }
 
     private bool _disposed = false;
 
     private void Dispose(bool disposing)
     {
-        if (!this._disposed)
+        if (!_disposed)
         {
             if (disposing)
             {
                 _context.Dispose();
             }
         }
-
-        this._disposed = true;
+        _disposed = true;
     }
 
     public void Dispose()
