@@ -16,8 +16,7 @@ public static class InfrastructureRegistration
         services.AddDbContext<ApplicationDbContext>(opt =>
             opt.UseNpgsql(connectionString, m => { m.EnableRetryOnFailure(); }));
 
-        services.AddScoped<ICategoryRepository, CategoryRepository>();
-        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddTransient<IUnitOfWork, UnitOfWork>();
         return services;
     }
 
